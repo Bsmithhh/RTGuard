@@ -1,7 +1,81 @@
-# Each rule must link to its QNX 8.0 Library Reference page.
+# Each rule must link to its QNX 8.0 documentation page.
+# match() flags a call when its name is in `functions`.
+
 - id: QNX-1
-  functions: [MsgSend, MsgSendv]
+  functions: [MsgSend, MsgSend_r, MsgSendv, MsgSendv_r]
   message: blocks until the server replies
   fix: bound the wait with TimerTimeout() before the call
-  # TODO: verify this URL
   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/m/msgsend.html
+
+- id: QNX-2
+  functions: [MsgReceive, MsgReceive_r, MsgReceivev, MsgReceivev_r]
+  message: blocks until a message arrives
+  fix: bound the wait with TimerTimeout() before the call
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/m/msgreceive.html
+
+- id: QNX-3
+  functions: [InterruptWait, InterruptWait_r]
+  message: blocks until an interrupt occurs
+  fix: bound the wait with TimerTimeout() before the call (not possible with _NTO_INTR_WAIT_FLAGS_FAST)
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/i/interruptwait.html
+
+- id: RT-1
+  functions: [malloc, calloc, realloc, free]
+  message: allocates or frees heap memory, which takes unbounded time
+  fix: allocate up front at init and reuse buffers or a fixed-size pool
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/m/malloc.html
+  # TODO: C++ `new` is a CXX_NEW_EXPR, not a named call, and
+  # vector::push_back without reserve() needs more than a name match.
+
+- id: RT-2
+  functions: [printf, fprintf, puts, fputs, fopen, fwrite, fread, fflush, fclose]
+  message: does stdio/file I/O, which can block on the resource manager
+  fix: log with slog2f() or write to a buffer and flush it from a non-critical thread
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/s/slog2f.html
+  # TODO: std::cout is operator<<, not a named call.
+
+- id: RT-3
+  functions: [pthread_mutex_lock, SyncMutexLock, SyncMutexLock_r]
+  message: blocks until the mutex owner unlocks it
+  fix: keep the critical section short, or use pthread_mutex_trylock() with a fallback (QNX advises against mutex timeouts)
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/s/syncmutexlock.html
+
+- id: RT-4
+  functions: [sleep, usleep, delay, nanosleep]
+  message: suspends the thread, possibly longer than requested
+  fix: wait on a periodic timer (timer_create() with a pulse) instead of sleeping
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/delay.html
+
+- id: RT-5
+  functions: [pthread_cond_wait, sem_wait]
+  message: blocks until signaled, with no time limit
+  fix: use pthread_cond_timedwait() or sem_timedwait()
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/p/pthread_cond_wait.html
+
+# The rules below need more than a name match. They stay commented out
+# until there's code to check them; with match() as it is, uncommenting
+# them would flag every call by name.
+#
+# - id: QNX-4
+#   check: client arms TimerTimeout() before MsgSend*(), but the server's
+#     ChannelCreate() sets _NTO_CHF_UNBLOCK, so the client won't unblock
+#     once the server has received the message
+#   fix: make sure the server handles the unblock pulse with MsgReply()/MsgError()
+#   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/t/timertimeout.html
+#
+# - id: QNX-5
+#   check: read()/write()/open() on a device path
+#   message: is a message to a resource manager underneath and can block
+#   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.resmgr/topic/skeleton_ClientSide.html
+#
+# - id: QNX-6
+#   check: another kernel call between TimerTimeout() and the blocking call
+#   message: the timeout is disarmed by the next kernel call, so the intended call has none
+#   fix: call TimerTimeout() immediately before the blocking call
+#   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/t/timertimeout.html
+#
+# - id: QNX-7
+#   check: name_open()/ConnectAttach()/ChannelCreate() inside a loop
+#   message: repeats connection setup on every iteration
+#   fix: do setup once at init
+#   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/n/name_open.html
