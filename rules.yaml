@@ -1,0 +1,7 @@
+# Each rule must link to its QNX 8.0 Library Reference page.
+- id: QNX-1
+  functions: [MsgSend, MsgSendv]
+  message: blocks until the server replies
+  fix: bound the wait with TimerTimeout() before the call
+  # TODO: verify this URL
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/m/msgsend.html
