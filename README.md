@@ -45,9 +45,9 @@ from `control_loop` down to them.
 ## How it works
 
 1. **Parse** the file with libclang, using the QNX 8.0 headers (`rtguard/parse.py`).
-2. **Find critical threads:** functions marked `// rtguard: critical`
-   (`rtguard/threads.py`). Automatic detection from `pthread_create` with
-   `SCHED_FIFO`/`SCHED_RR` is in progress.
+2. **Find critical threads:** functions started by `pthread_create` with
+   attributes set to `SCHED_FIFO` or `SCHED_RR`, plus any function marked
+   `// rtguard: critical` (`rtguard/threads.py`).
 3. **Walk the calls** reachable from each critical function, following helper
    functions defined in the same file (`rtguard/callgraph.py`).
 4. **Match** each call against `rules.yaml` (`rtguard/rules.py`).
@@ -79,7 +79,7 @@ from rtguard.callgraph import reachable_calls
 from rtguard.rules import load, match
 from rtguard.report import warn
 
-tu = parse("examples/bad/msgsend.c")
+tu = parse("examples/bad/pthread_mixed.c")
 rules = load("rules.yaml")
 for func in find_critical(tu):
     for call in reachable_calls(func):
@@ -88,8 +88,16 @@ for func in find_critical(tu):
             warn(call, rule)
 ```
 
-Mark a thread function as critical by putting this comment on the line
-directly above it:
+RTGuard treats a thread as critical when it is started with a real-time
+scheduling policy:
+
+```c
+pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+pthread_create(&tid, &attr, control_loop, NULL);   // control_loop is critical
+```
+
+To mark a function as critical in any other case, put this comment on the
+line directly above it:
 
 ```c
 // rtguard: critical
