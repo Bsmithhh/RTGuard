@@ -5,7 +5,17 @@ from clang.cindex import CursorKind
 def reachable_calls(func):
     """Return the CALL_EXPR cursors reachable from func."""
     reached = []
-    for node in func.walk_preorder():
-        if node.kind == CursorKind.CALL_EXPR:
-            reached.append(node)
+    visited= set()
+    todo = [func]
+    while todo:
+        current = todo.pop()
+        if current in visited:
+            continue
+        visited.add(current)
+        for node in current.walk_preorder():
+            if node.kind == CursorKind.CALL_EXPR:
+                reached.append(node)
+                target = node.referenced
+                if target and target.is_definition():
+                    todo.append(target)
     return reached
