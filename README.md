@@ -118,6 +118,7 @@ Each rule links to the QNX 8.0 documentation it is based on.
 | RT-3 | `pthread_mutex_lock()`, `SyncMutexLock()`: block until the owner unlocks | Short critical sections, or `pthread_mutex_trylock()` with a fallback | [SyncMutexLock()](https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/s/syncmutexlock.html) |
 | RT-4 | `sleep`, `usleep`, `delay`, `nanosleep`: suspend the thread | Wait on a periodic timer instead | [delay()](https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/delay.html) |
 | RT-5 | `pthread_cond_wait()`, `sem_wait()`: block with no time limit | `pthread_cond_timedwait()`, `sem_timedwait()` | [pthread_cond_wait()](https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/p/pthread_cond_wait.html) |
+| QNX-8 | `pthread_attr_setschedpolicy()` with `SCHED_FIFO`/`SCHED_RR` but no `PTHREAD_EXPLICIT_SCHED`: QNX ignores the policy and the thread inherits its creator's | Call `pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED)` | [pthread_attr_setschedpolicy()](https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/p/pthread_attr_setschedpolicy.html) |
 
 ### Planned
 

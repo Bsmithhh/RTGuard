@@ -40,4 +40,29 @@ def first_ref(cursor):
             return node.referenced
     return None
 
-
+def find_ignored_policies(tu):
+    """Return the pthread_attr_setschedpolicy calls that are ignored."""
+    ignored = []
+    policy_calls = []
+    explicit_attrs = set()
+    with open(tu.spelling, "r", encoding="utf-8") as f:
+        src = f.read()
+    for node in tu.cursor.walk_preorder():
+        if node.kind == CursorKind.CALL_EXPR and node.spelling == "pthread_attr_setschedpolicy" and node.location.file.name == tu.spelling:
+            args = list(node.get_arguments())
+            e = args[1].extent
+            if src[e.start.offset:e.end.offset] in ("SCHED_FIFO", "SCHED_RR"):
+                policy_calls.append(node)
+        if node.kind == CursorKind.CALL_EXPR and node.spelling == "pthread_attr_setinheritsched" and node.location.file.name == tu.spelling:
+            args = list(node.get_arguments())
+            e = args[1].extent
+            if src[e.start.offset:e.end.offset] == "PTHREAD_EXPLICIT_SCHED":
+                attr = first_ref(args[0])
+                if attr:
+                    explicit_attrs.add(attr)
+    for call in policy_calls:
+        args = list(call.get_arguments())
+        attr = first_ref(args[0])
+        if attr not in explicit_attrs:
+            ignored.append(call)
+    return ignored

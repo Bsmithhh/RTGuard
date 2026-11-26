@@ -52,6 +52,12 @@
   fix: use pthread_cond_timedwait() or sem_timedwait()
   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/p/pthread_cond_wait.html
 
+- id: QNX-8
+  functions: [] #checked by find_ignored_policies in threads.py
+  message: has no effect, because the thread inherits its creator's scheduling policy by default
+  fix: call pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) before pthread_create()
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/p/pthread_attr_setschedpolicy.html
+
 # The rules below need more than a name match. They stay commented out
 # until there's code to check them; with match() as it is, uncommenting
 # them would flag every call by name.
@@ -79,3 +85,4 @@
 #   message: repeats connection setup on every iteration
 #   fix: do setup once at init
 #   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/n/name_open.html
+
