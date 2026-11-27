@@ -64,6 +64,12 @@
   fix: call it once before the loop and reuse the result
   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/n/name_open.html
 
+- id: QNX-6
+  functions: []  # checked by find_disarmed_timeouts in callgraph.py
+  message: runs between TimerTimeout() and the blocking call, so it uses up the timeout and the blocking call has none
+  fix: call TimerTimeout() immediately before the blocking call
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/t/timertimeout.html
+
 # The rules below need more than a name match. They stay commented out
 # until there's code to check them; with match() as it is, uncommenting
 # them would flag every call by name.
@@ -79,12 +85,6 @@
 #   check: read()/write()/open() on a device path
 #   message: is a message to a resource manager underneath and can block
 #   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.resmgr/topic/skeleton_ClientSide.html
-#
-# - id: QNX-6
-#   check: another kernel call between TimerTimeout() and the blocking call
-#   message: the timeout is disarmed by the next kernel call, so the intended call has none
-#   fix: call TimerTimeout() immediately before the blocking call
-#   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/t/timertimeout.html
-#
+
 
 
