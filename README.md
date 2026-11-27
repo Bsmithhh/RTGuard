@@ -119,6 +119,7 @@ Each rule links to the QNX 8.0 documentation it is based on.
 | RT-4 | `sleep`, `usleep`, `delay`, `nanosleep`: suspend the thread | Wait on a periodic timer instead | [delay()](https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/d/delay.html) |
 | RT-5 | `pthread_cond_wait()`, `sem_wait()`: block with no time limit | `pthread_cond_timedwait()`, `sem_timedwait()` | [pthread_cond_wait()](https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/p/pthread_cond_wait.html) |
 | QNX-8 | `pthread_attr_setschedpolicy()` with `SCHED_FIFO`/`SCHED_RR` but no `PTHREAD_EXPLICIT_SCHED`: QNX ignores the policy and the thread inherits its creator's | Call `pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED)` | [pthread_attr_setschedpolicy()](https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/p/pthread_attr_setschedpolicy.html) |
+| QNX-7 | `name_open()`, `ConnectAttach()`, `ChannelCreate()` inside a loop in a critical thread: repeats setup every cycle (best practice) | Call it once before the loop and reuse the result | [name_open()](https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/n/name_open.html) |
 
 ### Planned
 
@@ -127,7 +128,6 @@ Each rule links to the QNX 8.0 documentation it is based on.
 | QNX-4 | A timeout on `MsgSend()` that won't fire because the server's channel uses `_NTO_CHF_UNBLOCK` |
 | QNX-5 | `read()`/`write()`/`open()` on devices, which are messages to a resource manager |
 | QNX-6 | Another kernel call between `TimerTimeout()` and the blocking call, which disarms the timeout |
-| QNX-7 | `name_open()`, `ConnectAttach()`, `ChannelCreate()` inside a loop |
 
 ## Adding a rule
 

@@ -58,6 +58,12 @@
   fix: call pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) before pthread_create()
   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/p/pthread_attr_setschedpolicy.html
 
+- id: QNX-7
+  functions: []  # checked by find_setup_in_loops in callgraph.py
+  message: sets up a connection on every loop iteration, adding avoidable work to each cycle
+  fix: call it once before the loop and reuse the result
+  doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/n/name_open.html
+
 # The rules below need more than a name match. They stay commented out
 # until there's code to check them; with match() as it is, uncommenting
 # them would flag every call by name.
@@ -80,9 +86,5 @@
 #   fix: call TimerTimeout() immediately before the blocking call
 #   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/t/timertimeout.html
 #
-# - id: QNX-7
-#   check: name_open()/ConnectAttach()/ChannelCreate() inside a loop
-#   message: repeats connection setup on every iteration
-#   fix: do setup once at init
-#   doc: https://www.qnx.com/developers/docs/8.0/com.qnx.doc.neutrino.lib_ref/topic/n/name_open.html
+
 
